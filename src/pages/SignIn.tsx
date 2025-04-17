@@ -26,8 +26,15 @@ const SignIn = () => {
     e.preventDefault();
     
     if (!email || !password) {
-      toast("Please enter both email and password.", {
+      toast.error("Please enter both email and password.", {
         description: "Both fields are required to sign in.",
+      });
+      return;
+    }
+
+    if (!email.includes('@')) {
+      toast.error("Invalid email format", {
+        description: "Please enter a valid email address.",
       });
       return;
     }
@@ -37,11 +44,14 @@ const SignIn = () => {
     try {
       const user = await signIn(email, password);
       if (user) {
-        toast.success("You have successfully signed in!");
+        toast.success("Welcome back!", {
+          description: "You have successfully signed in.",
+        });
         navigate(from, { replace: true });
       }
     } catch (error) {
       // Error is handled in the signIn function
+      console.error("Sign-in submission error:", error);
     } finally {
       setIsLoading(false);
     }

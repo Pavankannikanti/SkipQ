@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowDownCircle, BriefcaseBusiness } from "lucide-react";
+import { ArrowDownCircle, BriefcaseBusiness, ArrowRight } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import JoinWaitlistForm from "@/components/JoinWaitlistForm";
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
   useEffect(() => {
     // Delay the animation slightly for better effect
@@ -69,6 +72,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
+
+
     </div>
   );
 };

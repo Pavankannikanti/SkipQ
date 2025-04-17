@@ -24,37 +24,52 @@ const SignUp = () => {
     e.preventDefault();
     
     if (!name || !email || !password) {
-      toast("Missing information", {
+      toast.error("Missing information", {
         description: "Please fill in all required fields.",
       });
       return;
     }
 
+    if (!email.includes('@') || !email.includes('.')) {
+      toast.error("Invalid email format", {
+        description: "Please enter a valid email address.",
+      });
+      return;
+    }
+
     if (password.length < 8) {
-      toast("Password too short", {
-        description: "Password must be at least 8 characters long",
+      toast.error("Password too short", {
+        description: "Password must be at least 8 characters long.",
       });
       return;
     }
 
     if (!agreeTerms) {
-      toast("Terms required", {
+      toast.error("Terms required", {
         description: "You must agree to the terms and conditions.",
       });
       return;
     }
 
     setIsLoading(true);
+    toast.loading("Creating your account...");
     
     try {
       const user = await signUp(email, password, name);
       if (user) {
-        toast.success("Account created successfully!");
+        toast.dismiss();
+        toast.success("Welcome to SkipQ!", {
+          description: "Your account has been created successfully.",
+        });
         navigate("/dashboard");
+      } else {
+        setIsLoading(false);
       }
-    } catch (error) {
-      // Error is handled in the signUp function
-    } finally {
+    } catch (error: any) {
+      console.error("Sign up submission error:", error);
+      toast.error("Account creation failed", {
+        description: "Please try again or contact support if the problem persists.",
+      });
       setIsLoading(false);
     }
   };

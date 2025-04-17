@@ -14,6 +14,8 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { Bell, Menu, Clock, BriefcaseBusiness, User, Settings, LogOut } from "lucide-react";
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import JoinWaitlistForm from "@/components/JoinWaitlistForm";
 
 const NavBar = () => {
   const isMobile = useIsMobile();
@@ -88,6 +90,17 @@ const NavBar = () => {
         )}
         
         <div className="flex items-center space-x-2">
+          {/* Join Waitlist Button - always visible */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="default" size="sm" className="font-semibold">
+                Join Waitlist
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <JoinWaitlistForm />
+            </DialogContent>
+          </Dialog>
           {currentUser && (
             <>
               <Button variant="ghost" size="icon" className="relative">
