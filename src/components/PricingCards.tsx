@@ -70,10 +70,7 @@ const PricingCards = () => {
                   <Check className="h-5 w-5 text-secondary flex-shrink-0 mr-3" />
                   <span>No physical handover required</span>
                 </li>
-                <li className="flex">
-                  <Check className="h-5 w-5 text-secondary flex-shrink-0 mr-3" />
-                  <span>Base platform fee: $1.00</span>
-                </li>
+
               </ul>
               
               <Button 
@@ -121,10 +118,7 @@ const PricingCards = () => {
                   <Check className="h-5 w-5 text-primary-foreground flex-shrink-0 mr-3" />
                   <span>Guaranteed spot in line</span>
                 </li>
-                <li className="flex">
-                  <Check className="h-5 w-5 text-primary-foreground flex-shrink-0 mr-3" />
-                  <span>Base platform fee: $1.50</span>
-                </li>
+
               </ul>
               
               <Button 

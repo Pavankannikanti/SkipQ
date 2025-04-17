@@ -147,12 +147,12 @@ const JobFeed = ({ cityFilter = null, jobTypeFilter = "all", searchQuery = "" }:
   );
   
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Available Jobs</h2>
+    <div className="space-y-4 px-2 xs:px-3 sm:px-4 md:px-0 max-w-full">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0">
+        <h2 className="text-lg xs:text-xl sm:text-2xl font-bold">Available Jobs</h2>
         <Collapsible open={openFilters} onOpenChange={setOpenFilters}>
           <CollapsibleTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <Sliders className="mr-2 h-4 w-4" />
               Filters
             </Button>
@@ -161,10 +161,10 @@ const JobFeed = ({ cityFilter = null, jobTypeFilter = "all", searchQuery = "" }:
             <div className="space-y-4">
               <h3 className="font-medium">Filter Jobs</h3>
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" size="sm">Nearby</Button>
-                <Button variant="outline" size="sm">High Pay</Button>
-                <Button variant="outline" size="sm">Quick Jobs</Button>
-                <Button variant="outline" size="sm">New Only</Button>
+                <Button variant="outline" size="sm" className="w-full">Nearby</Button>
+                <Button variant="outline" size="sm" className="w-full">High Pay</Button>
+                <Button variant="outline" size="sm" className="w-full">Quick Jobs</Button>
+                <Button variant="outline" size="sm" className="w-full">New Only</Button>
               </div>
               <div className="pt-2 flex justify-end">
                 <Button variant="ghost" size="sm" onClick={fetchJobs}>
@@ -177,7 +177,7 @@ const JobFeed = ({ cityFilter = null, jobTypeFilter = "all", searchQuery = "" }:
         </Collapsible>
       </div>
       
-      <div className="space-y-1">
+      <div className="space-y-2">
         {isLoading ? (
           <div className="py-8 text-center">
             <p className="text-muted-foreground">Loading jobs...</p>
@@ -193,7 +193,9 @@ const JobFeed = ({ cityFilter = null, jobTypeFilter = "all", searchQuery = "" }:
             </Button>
           </div>
         ) : jobs.length > 0 ? (
-          jobs.map(renderJob)
+          <div className="flex flex-col gap-3 w-full">
+            {jobs.map(renderJob)}
+          </div>
         ) : (
           <div className="py-8 text-center">
             <p className="text-muted-foreground">No available jobs match your filters.</p>

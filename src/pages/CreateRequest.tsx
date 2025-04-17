@@ -56,7 +56,10 @@ const CreateRequest = () => {
       description: "",
       date: "",
     },
+    mode: "onBlur"
   });
+
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = form.handleSubmit((data) => {
     // Create a new request object
@@ -99,6 +102,9 @@ const CreateRequest = () => {
           </div>
 
           <Form {...form}>
+            {submitError && (
+              <div className="mb-2 text-sm text-red-600 text-center font-medium">{submitError}</div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-8">
               <FormField
                 control={form.control}

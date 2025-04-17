@@ -81,10 +81,10 @@ const RequestCard = ({
   const jobTypeInfo = getJobTypeColor(jobType);
 
   return (
-    <Card className="uber-card border-none shadow-sm hover:shadow transition-shadow duration-200">
-      <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between bg-card">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
+    <Card className="uber-card border-none shadow-sm hover:shadow transition-shadow duration-200 w-full max-w-full">
+      <CardHeader className="p-3 xs:p-4 pb-2 flex flex-row items-center justify-between bg-card w-full">
+        <div className="flex flex-col min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5 xs:gap-2">
             <span className={`h-2 w-2 rounded-full ${getStatusColor(status)}`} />
             <span className="text-xs font-medium text-muted-foreground">
               {getStatusLabel(status)}
@@ -98,12 +98,12 @@ const RequestCard = ({
               </Badge>
             )}
           </div>
-          <h3 className="text-base font-medium mt-1">{title}</h3>
+          <h3 className="text-sm xs:text-base font-medium mt-1 break-words max-w-[90vw] xs:max-w-full">{title}</h3>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <FavoriteButton itemId={id} itemType="request" />
           {username && userInitials && (
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-7 w-7 xs:h-8 xs:w-8">
               <AvatarFallback className="bg-primary/10 text-primary text-xs">
                 {userInitials}
               </AvatarFallback>
@@ -111,19 +111,19 @@ const RequestCard = ({
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-2 space-y-3">
-        <div className="flex items-center text-sm text-muted-foreground">
-          <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+      <CardContent className="p-3 xs:p-4 pt-2 space-y-3 w-full">
+        <div className="flex items-center text-xs xs:text-sm text-muted-foreground w-full">
+          <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground flex-shrink-0" />
           <span className="truncate flex-1">{location}</span>
           {distance && (
             <span className="ml-auto text-xs font-medium">{distance}</span>
           )}
         </div>
-        <div className="flex items-center text-sm text-muted-foreground">
+        <div className="flex items-center text-xs xs:text-sm text-muted-foreground">
           <Clock className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
           <span>{estimatedTime}</span>
         </div>
-        <div className="flex items-center text-sm font-medium">
+        <div className="flex items-center text-xs xs:text-sm font-medium">
           <DollarSign className="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
           <span className="text-foreground">${payment.toFixed(2)} CAD</span>
           {jobType && (

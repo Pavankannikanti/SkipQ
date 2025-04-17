@@ -12,19 +12,34 @@ const JoinWaitlistForm = () => {
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Email regex for stricter validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !email.includes('@')) {
-      toast.error("Please enter a valid email address");
+    setError(null);
+
+    if (!email || !emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      await addDoc(collection(db, "waitlist"), {
+      // Prevent duplicate submissions (simulate by checking for same email in Firestore)
+      const waitlistRef = collection(db, "waitlist");
+      const q = await import("firebase/firestore").then(m => m.query(waitlistRef, m.where("email", "==", email)));
+      const snapshot = await import("firebase/firestore").then(m => m.getDocs(q));
+      if (!snapshot.empty) {
+        setError("This email is already on the waitlist.");
+        setIsLoading(false);
+        return;
+      }
+
+      await addDoc(waitlistRef, {
         email,
         name: name || null,
         city: city || null,
@@ -40,10 +55,11 @@ const JoinWaitlistForm = () => {
       setEmail("");
       setName("");
       setCity("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding to waitlist:", error);
+      setError("Failed to join waitlist. Please try again later.");
       toast.error("Failed to join waitlist", {
-        description: "Please try again later."
+        description: error?.message || "Please try again later."
       });
     } finally {
       setIsLoading(false);

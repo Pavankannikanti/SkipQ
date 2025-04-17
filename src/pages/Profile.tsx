@@ -1,71 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import { CalendarDays, Clock, DollarSign, MapPin, Star, ThumbsUp, User } from "lucide-react";
+import { MapPin, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { db } from "@/lib/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 const Profile = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const { currentUser } = useAuth();
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
-    {
-      title: "Job Success",
-      value: "98%",
-      icon: ThumbsUp,
-      color: "text-green-500"
-    },
-    {
-      title: "Response Rate",
-      value: "100%",
-      icon: Clock,
-      color: "text-primary"
-    },
-    {
-      title: "Jobs Completed",
-      value: "24",
-      icon: Star,
-      color: "text-amber-500"
-    }
-  ];
+  useEffect(() => {
+    if (!currentUser) return;
+    const fetchJobs = async () => {
+      setLoading(true);
+      const q = query(
+        collection(db, "requests"),
+        where("userId", "==", currentUser.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      setJobs(querySnapshot.docs.map(doc => doc.data()));
+      setLoading(false);
+    };
+    fetchJobs();
+  }, [currentUser]);
 
-  const reviews = [
-    {
-      id: 1,
-      author: "David L.",
-      initials: "DL",
-      rating: 5,
-      date: "2 weeks ago",
-      comment: "Michael was punctual and kept me updated throughout the entire wait. Excellent service!"
-    },
-    {
-      id: 2,
-      author: "Sarah M.",
-      initials: "SM",
-      rating: 5,
-      date: "1 month ago",
-      comment: "Very reliable and professional. Will definitely use his services again."
-    },
-    {
-      id: 3,
-      author: "Alex K.",
-      initials: "AK",
-      rating: 4,
-      date: "2 months ago",
-      comment: "Good communication and arrived on time. Saved me a lot of waiting."
-    }
-  ];
-
-  const skills = [
-    { name: "Fast Response", level: 95 },
-    { name: "Communication", level: 90 },
-    { name: "Reliability", level: 98 },
-    { name: "Punctuality", level: 92 }
-  ];
+  if (!currentUser) {
+    return (
+      <Layout>
+        <div className="text-center py-20">
+          <h2 className="text-2xl font-bold">Please sign in to view your profile.</h2>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -73,48 +45,84 @@ const Profile = () => {
         <div className="flex flex-col sm:flex-row items-start gap-6">
           <div className="flex-shrink-0">
             <Avatar className="h-24 w-24 sm:h-32 sm:w-32 rounded-lg border-4 border-card">
-              <AvatarFallback className="text-3xl bg-primary text-primary-foreground">MC</AvatarFallback>
+              <AvatarImage src={currentUser.photoURL || undefined} />
+              <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
+                {currentUser.displayName
+                  ? currentUser.displayName
+                      .split(" ")
+                      .map(word => word[0])
+                      .join("")
+                  : "U"}
+              </AvatarFallback>
             </Avatar>
           </div>
-          
           <div className="flex-1 space-y-4">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold tracking-tight">Michael Chen</h1>
+                <h1 className="text-3xl font-bold tracking-tight">
+                  {currentUser.displayName || "New User"}
+                </h1>
                 <Badge className="bg-primary/10 text-primary hover:bg-primary/20">Verified</Badge>
               </div>
-              <p className="text-muted-foreground mt-1">Q Agent & Customer</p>
+              <p className="text-muted-foreground mt-1">{currentUser.email}</p>
             </div>
-            
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 mr-1" />
-                <span>Toronto, Canada</span>
+                <span>Location not set</span>
               </div>
-              
               <div className="flex items-center text-sm text-muted-foreground">
                 <User className="h-4 w-4 mr-1" />
-                <span>Member since June 2023</span>
-              </div>
-              
-              <div className="flex items-center text-sm text-amber-500">
-                <Star className="h-4 w-4 mr-1 fill-amber-500" />
-                <span className="font-medium">4.9</span>
-                <span className="text-muted-foreground ml-1">(24 reviews)</span>
+                <span>Member since {currentUser.metadata?.creationTime
+                  ? new Date(currentUser.metadata.creationTime).toLocaleDateString()
+                  : "recently"}</span>
               </div>
             </div>
-            
             <div className="flex flex-wrap gap-2">
               <Button>Edit Profile</Button>
               <Button variant="outline">Settings</Button>
             </div>
           </div>
         </div>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="bg-muted/50 p-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview">
+            {loading ? (
+              <div className="py-12 text-center">Loading...</div>
+            ) : jobs.length === 0 ? (
+              <div className="py-12 text-center text-muted-foreground">
+                <p>No work history yet. Start by posting your first request!</p>
+              </div>
+            ) : (
+              <div>
+                <h2 className="font-semibold mb-2">Your Jobs</h2>
+                <ul>
+                  {jobs.map((job, idx) => (
+                    <li key={idx} className="mb-2">
+                      <span className="font-medium">{job.title}</span> — {job.status}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </TabsContent>
+          <TabsContent value="history">
+            <div className="py-12 text-center text-muted-foreground">
+              {jobs.length === 0
+                ? "No payment or review history yet."
+                : "Feature coming soon."}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </Layout>
+  );
+};
+
+export default Profile;
             <TabsTrigger value="payments">Payments</TabsTrigger>
           </TabsList>
           

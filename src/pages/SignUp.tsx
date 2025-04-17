@@ -17,43 +17,35 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { signUp } = useAuth();
+
+  // Email regex for stricter validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    setError(null);
     if (!name || !email || !password) {
-      toast.error("Missing information", {
-        description: "Please fill in all required fields.",
-      });
+      setError("Please fill in all required fields.");
       return;
     }
-
-    if (!email.includes('@') || !email.includes('.')) {
-      toast.error("Invalid email format", {
-        description: "Please enter a valid email address.",
-      });
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
       return;
     }
-
     if (password.length < 8) {
-      toast.error("Password too short", {
-        description: "Password must be at least 8 characters long.",
-      });
+      setError("Password must be at least 8 characters long.");
       return;
     }
-
     if (!agreeTerms) {
-      toast.error("Terms required", {
-        description: "You must agree to the terms and conditions.",
-      });
+      setError("You must agree to the terms and conditions.");
       return;
     }
-
     setIsLoading(true);
     toast.loading("Creating your account...");
-    
     try {
       const user = await signUp(email, password, name);
       if (user) {
@@ -67,8 +59,9 @@ const SignUp = () => {
       }
     } catch (error: any) {
       console.error("Sign up submission error:", error);
+      setError(error?.message || "Account creation failed. Please try again or contact support if the problem persists.");
       toast.error("Account creation failed", {
-        description: "Please try again or contact support if the problem persists.",
+        description: error?.message || "Please try again or contact support if the problem persists.",
       });
       setIsLoading(false);
     }
@@ -94,6 +87,9 @@ const SignUp = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {error && (
+              <div className="mb-2 text-sm text-red-600 text-center font-medium">{error}</div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
