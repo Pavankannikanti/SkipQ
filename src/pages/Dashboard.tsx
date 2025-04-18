@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import RequestCard, { RequestStatus } from "@/components/RequestCard";
 import { Button } from "@/components/ui/button";
+import ChatModal from "@/components/ChatModal";
+import CallModal from "@/components/CallModal";
+import { MessageCircle, Phone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tabs,
@@ -75,6 +78,12 @@ const Dashboard = () => {
     positiveRatings: 96 // percentage
   };
   
+  // Chat/Call modal state
+  const [chatOpen, setChatOpen] = useState(false);
+  const [callOpen, setCallOpen] = useState(false);
+  const [activeJob, setActiveJob] = useState<any | null>(null);
+  const [otherUser, setOtherUser] = useState<{ displayName: string; avatarUrl?: string }>({ displayName: "Q Agent" });
+
   // Your Requests
   const yourRequests = [
     {
@@ -83,7 +92,9 @@ const Dashboard = () => {
       location: "CN Tower, Toronto",
       estimatedTime: "1-2 hours",
       payment: 25.00,
-      status: "open" as RequestStatus
+      status: "open" as RequestStatus,
+      username: "Sarah M.",
+      userInitials: "SM"
     },
     {
       id: "2",
@@ -91,7 +102,9 @@ const Dashboard = () => {
       location: "Toronto Pearson Airport, Terminal 1",
       estimatedTime: "30-45 min",
       payment: 20.00,
-      status: "in-progress" as RequestStatus
+      status: "in-progress" as RequestStatus,
+      username: "Alex P.",
+      userInitials: "AP"
     }
   ];
   
@@ -245,7 +258,37 @@ const Dashboard = () => {
                   {yourRequests.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {yourRequests.map(request => (
-                        <RequestCard key={request.id} {...request} />
+                        <div key={request.id} className="relative group">
+                          <RequestCard {...request} />
+                          <div className="absolute top-2 right-2 flex flex-col gap-2 z-20">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              disabled={request.status === "completed"}
+                              title={request.status === "completed" ? "Chat disabled after job completion." : "Chat"}
+                              onClick={() => {
+                                setActiveJob(request);
+                                setOtherUser({ displayName: request.username || "Q Agent" });
+                                setChatOpen(true);
+                              }}
+                            >
+                              <MessageCircle className="h-5 w-5" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              disabled={request.status === "completed"}
+                              title={request.status === "completed" ? "Call disabled after job completion." : "Call"}
+                              onClick={() => {
+                                setActiveJob(request);
+                                setOtherUser({ displayName: request.username || "Q Agent" });
+                                setCallOpen(true);
+                              }}
+                            >
+                              <Phone className="h-5 w-5" />
+                            </Button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -256,7 +299,7 @@ const Dashboard = () => {
                   )}
                 </CardContent>
               </Card>
-              
+
               {/* Your Waiting Jobs */}
               <Card>
                 <CardHeader className="pb-2">
@@ -266,7 +309,37 @@ const Dashboard = () => {
                   {yourWaitingJobs.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {yourWaitingJobs.map(job => (
-                        <RequestCard key={job.id} {...job} />
+                        <div key={job.id} className="relative group">
+                          <RequestCard {...job} />
+                          <div className="absolute top-2 right-2 flex flex-col gap-2 z-20">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              disabled={job.status === "completed"}
+                              title={job.status === "completed" ? "Chat disabled after job completion." : "Chat"}
+                              onClick={() => {
+                                setActiveJob(job);
+                                setOtherUser({ displayName: job.username || "Requester" });
+                                setChatOpen(true);
+                              }}
+                            >
+                              <MessageCircle className="h-5 w-5" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              disabled={job.status === "completed"}
+                              title={job.status === "completed" ? "Call disabled after job completion." : "Call"}
+                              onClick={() => {
+                                setActiveJob(job);
+                                setOtherUser({ displayName: job.username || "Requester" });
+                                setCallOpen(true);
+                              }}
+                            >
+                              <Phone className="h-5 w-5" />
+                            </Button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (
@@ -346,6 +419,26 @@ const Dashboard = () => {
           </Tabs>
         </div>
       </div>
+      {/* Chat Modal */}
+      {activeJob && (
+        <ChatModal
+          jobId={activeJob.id}
+          open={chatOpen}
+          onClose={() => setChatOpen(false)}
+          otherUser={otherUser}
+          disabled={activeJob.status === "completed"}
+        />
+      )}
+      {/* Call Modal */}
+      {activeJob && (
+        <CallModal
+          jobId={activeJob.id}
+          open={callOpen}
+          onClose={() => setCallOpen(false)}
+          otherUser={otherUser}
+          disabled={activeJob.status === "completed"}
+        />
+      )}
     </Layout>
   );
 };

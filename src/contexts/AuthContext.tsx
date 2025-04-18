@@ -43,6 +43,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   // Create a new user with email and password
+  // Helper to initialize Firestore user data in the background
+  const initializeUserData = async (user: User, name: string) => {
+    try {
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        displayName: name,
+        createdAt: Date.now(),
+        favorites: [],
+        jobs: [],
+        // Add more fields as needed
+      });
+      console.log("Firestore document created successfully");
+    } catch (firestoreError: any) {
+      console.error("Error creating Firestore document:", firestoreError);
+      toast.error("Account created but profile setup failed. Please contact support.");
+    }
+  };
+
+  // Create a new user with email and password
   const signUp = async (email: string, password: string, name: string): Promise<User | null> => {
     try {
       console.log("Starting sign up process...");
@@ -50,36 +69,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const user = userCredential.user;
       console.log("User created successfully, updating profile...");
 
-      try {
-        // Update user profile with display name
-        await updateProfile(user, {
-          displayName: name
+      // Update user profile with display name (do not block signup)
+      updateProfile(user, { displayName: name })
+        .then(() => console.log("Profile updated successfully"))
+        .catch((profileError: any) => {
+          console.error("Error updating profile:", profileError);
+          toast.error("Account created but profile setup incomplete. Please try updating your profile later.");
         });
-        console.log("Profile updated successfully");
 
-        try {
-          // Create a user document in Firestore
-          await setDoc(doc(db, "users", user.uid), {
-            email: user.email,
-            displayName: name,
-            createdAt: Date.now()
-          });
-          console.log("Firestore document created successfully");
-          return user;
-        } catch (firestoreError: any) {
-          console.error("Error creating Firestore document:", firestoreError);
-          toast.error("Account created but profile setup failed. Please contact support.");
-          return user; // Still return user as auth was successful
-        }
-      } catch (profileError: any) {
-        console.error("Error updating profile:", profileError);
-        toast.error("Account created but profile setup incomplete. Please try updating your profile later.");
-        return user; // Still return user as auth was successful
-      }
+      // Initialize Firestore user data in the background
+      initializeUserData(user, name);
+
+      // Immediately return user for instant login/redirect
+      return user;
     } catch (error: any) {
       console.error("Sign up error:", error);
       let errorMessage = "Failed to create account";
-      
       // Handle specific Firebase auth errors
       switch (error.code) {
         case 'auth/email-already-in-use':
@@ -98,7 +103,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           errorMessage = "Network error. Please check your internet connection.";
           break;
       }
-      
       toast.error(errorMessage);
       return null;
     }
